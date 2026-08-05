@@ -781,7 +781,22 @@ impl Config {
     }
 
     pub fn path<P: AsRef<Path>>(p: P) -> PathBuf {
-        #[cfg(any(target_os = "android", target_os = "ios"))]
+        // myRustDesk: portable mode on Windows — store config beside the exe
+        // (in a `config/` subdirectory of the exe's parent) instead of
+        // %APPDATA%, so the entire deployment is self-contained and leaves
+        // nothing in the user profile. log_path() derives from this, so logs
+        // also land beside the exe.
+        #[cfg(windows)]
+        {
+            if let Some(exe_dir) =
+                std::env::current_exe().ok().and_then(|e| e.parent().map(|p| p.to_path_buf()))
+            {
+                let mut path = exe_dir.join("config");
+                let _ = std::fs::create_dir_all(&path);
+                path.push(p);
+                return path;
+            }
+        }
         {
             let mut path: PathBuf = APP_DIR.read().unwrap().clone().into();
             path.push(p);
