@@ -35,6 +35,14 @@ pub fn update_temporary_password() {
 }
 
 // Should only be called in server
+// myRustDesk: allow the server CLI to set an explicit one-time password at
+// launch (e.g. `myrustdesk-v2.exe --server mypassword`) so the operator knows
+// the credential without reading a randomly-generated value off the console.
+pub fn set_temporary_password(pw: &str) {
+    *TEMPORARY_PASSWORD.write().unwrap() = pw.to_owned();
+}
+
+// Should only be called in server
 pub fn temporary_password() -> String {
     TEMPORARY_PASSWORD.read().unwrap().clone()
 }
